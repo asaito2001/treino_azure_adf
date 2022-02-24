@@ -5,7 +5,7 @@
 		"type": "HttpServer",
 		"typeProperties": {
 			"url": "https://github.com/MicrosoftLearning/DP-203-Data-Engineer/blob/master/Allfiles/samplefiles/sale-small-20100102-snappy.parquet",
-			"enableServerCertificateValidation": true,
+			"enableServerCertificateValidation": false,
 			"authenticationType": "Anonymous"
 		},
 		"connectVia": {
