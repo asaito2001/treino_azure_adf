@@ -1,0 +1,34 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "MoviesS3",
+						"type": "DatasetReference"
+					},
+					"name": "MovieADLS"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "MapDrifted1",
+					"description": "Cria um mapeamento explícito para cada coluna em descompasso"
+				},
+				{
+					"name": "FilterYearsBefore1950"
+				},
+				{
+					"name": "DerivePrimaryGenre"
+				},
+				{
+					"name": "RankMoviesByRatings"
+				}
+			],
+			"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> MovieADLS\nMovieADLS derive(movie = toString(byName('movie')),\n\t\ttitle = toString(byName('title')),\n\t\tgenres = toString(byName('genres')),\n\t\tyear = toString(byName('year')),\n\t\tRating = toString(byName('Rating')),\n\t\t{Rotten Tomato} = toString(byName('Rotton Tomato'))) ~> MapDrifted1\nMapDrifted1 filter(toInteger(year) > 1950) ~> FilterYearsBefore1950\nFilterYearsBefore1950 derive(PrimaryGenre = iif(locate('|', genres) > 1, left(genres, locate('|', genres) -1), genres)) ~> DerivePrimaryGenre\nDerivePrimaryGenre window(over(PrimaryGenre,\n\t\tyear),\n\tdesc({Rotten Tomato}, true),\n\tRatingsRank = rank()) ~> RankMoviesByRatings"
+		}
+	}
+}
